@@ -7,6 +7,10 @@ import {
   Param,
   Body,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   Application,
@@ -15,6 +19,8 @@ import {
 import { CreateApplicationDto } from 'src/application/dto/create-application.dto';
 import { UpdateApplicationDto } from 'src/application/dto/update-application.dto';
 import { ApplicationsService } from 'src/application/services/applications.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import safeAwait from 'safe-await';
 
 @Controller('applications')
 export class ApplicationController {
@@ -57,5 +63,28 @@ export class ApplicationController {
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     const result = await this.applicationService.remove(id);
     return { success: result };
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file', { limits: { fieldSize: 5 * 1024 } }))
+  async importApplications(@UploadedFile() file: Express.Multer.File): Promise<{
+    succeed: Application[];
+    failed: Array<{ application: Application; reason: unknown }>;
+  }> {
+    const [error, applications] = await safeAwait(
+      async () => (await JSON.parse(file.buffer.toString())) as Application[],
+    );
+
+    if (error) {
+      Logger.error('Error while parsing file content');
+      Logger.error(error);
+      throw new BadRequestException('Error while parsing file');
+    }
+
+    if (!applications) {
+      throw new BadRequestException('No file content');
+    }
+
+    return this.applicationService.importApplications(applications);
   }
 }

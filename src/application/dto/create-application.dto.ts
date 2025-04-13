@@ -1,19 +1,20 @@
-import { IsString, IsEnum, IsOptional } from 'class-validator';
-
-export enum ApplicationStatus {
-  IN_REVIEW = 'in_review',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
+import { IsString, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsUniqueApplicationName } from 'src/common/validators/is-unique-application-name.validator';
+import {
+  ApplicationStatus,
+  EnumApplicationStatus,
+} from 'src/domain/entities/application.entity';
 
 export class CreateApplicationDto {
   @IsString()
+  @IsNotEmpty()
+  @IsUniqueApplicationName()
   name: string;
 
   @IsString()
   description: string;
 
-  @IsEnum(ApplicationStatus)
+  @IsEnum(EnumApplicationStatus)
   @IsOptional()
-  status?: ApplicationStatus; // Defaults to 'in_review'
+  status?: ApplicationStatus = EnumApplicationStatus.IN_REVIEW;
 }

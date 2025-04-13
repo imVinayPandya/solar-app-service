@@ -1,10 +1,11 @@
+import { RootFilterQuery } from 'mongoose';
 import {
   Application,
   ApplicationPayload,
 } from '../entities/application.entity';
 
 export interface ApplicationRepository {
-  findAll(): Promise<Application[]>;
+  findAll(filters?: RootFilterQuery<Application>): Promise<Application[]>;
   findById(id: string): Promise<Application | null>;
   create(application: ApplicationPayload): Promise<Application>;
   update(

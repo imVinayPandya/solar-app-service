@@ -12,8 +12,8 @@ export class MongooseApplicationRepository implements ApplicationRepository {
     private readonly applicationModel: Model<ApplicationModel>,
   ) {}
 
-  findAll(): Promise<Application[]> {
-    return this.applicationModel.find({}).exec();
+  findAll(filters?: RootFilterQuery<Application>): Promise<Application[]> {
+    return this.applicationModel.find(filters ?? {}).exec();
   }
 
   async findById(id: string): Promise<Application | null> {

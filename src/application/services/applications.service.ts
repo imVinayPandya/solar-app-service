@@ -20,32 +20,62 @@ export class ApplicationsService {
     private readonly applicationRepository: ApplicationRepository,
   ) {}
 
-  async create(application: CreateApplicationDto): Promise<Application> {
+  private async removeDuplicates(
+    applications: CreateApplicationDto[],
+  ): Promise<CreateApplicationDto[]> {
+    const uniqueNames = new Set<string>();
+    const result: CreateApplicationDto[] = [];
+
+    for (const app of applications) {
+      if (!uniqueNames.has(app.name)) {
+        const exists = await this.applicationRepository.findByName(app.name);
+        if (!exists) {
+          uniqueNames.add(app.name);
+          result.push(app);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  create = async (application: CreateApplicationDto): Promise<Application> => {
+    // exact duplicate name matching
     const existingApplication = await this.applicationRepository.findByName(
       application.name,
     );
     if (existingApplication) {
       throw new ConflictException('Application with this name already exists');
     }
+
+    // Additional duplicate checks
+    const potentialDuplicates = await this.applicationRepository.findDuplicates(
+      application.name,
+    );
+
+    if (potentialDuplicates.length > 0) {
+      throw new ConflictException('Potential duplicate application detected');
+    }
+
     return this.applicationRepository.create(application);
-  }
+  };
 
-  findAll(): Promise<Application[]> {
+  findAll = (): Promise<Application[]> => {
     return this.applicationRepository.findAll();
-  }
+  };
 
-  async findOne(id: string): Promise<Application> {
+  findOne = async (id: string): Promise<Application> => {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new NotFoundException('Application not found');
     }
     return application;
-  }
+  };
 
-  async update(
+  update = async (
     id: string,
     updates: UpdateApplicationDto,
-  ): Promise<Application | null> {
+  ): Promise<Application | null> => {
     const existingApplication = await this.applicationRepository.findById(id);
     if (!existingApplication) {
       throw new NotFoundException('Application not found');
@@ -62,27 +92,58 @@ export class ApplicationsService {
     }
 
     return this.applicationRepository.update(id, updates);
-  }
+  };
 
-  async remove(id: string): Promise<boolean> {
+  remove = async (id: string): Promise<boolean> => {
     const existingApplication = await this.applicationRepository.findById(id);
     if (!existingApplication) {
       throw new NotFoundException('Application not found');
     }
     return this.applicationRepository.delete(id);
-  }
+  };
 
-  async getApplicationsByStatus(
+  getApplicationsByStatus = async (
     status: ApplicationStatus,
-  ): Promise<Application[]> {
-    const allApplications = await this.applicationRepository.findAll();
-    return allApplications.filter((app) => app.status === status);
-  }
+  ): Promise<Application[]> => {
+    return this.applicationRepository.findAll({ status });
+  };
 
-  async getDuplicateData(name: string): Promise<Application[]> {
+  getDuplicateData = async (name: string): Promise<Application[]> => {
     if (!name) {
       throw new BadRequestException();
     }
     return this.applicationRepository.findDuplicates(name);
-  }
+  };
+
+  importApplications = async (
+    applications: CreateApplicationDto[],
+  ): Promise<{
+    succeed: Application[];
+    failed: Array<{ application: Application; reason: unknown }>;
+  }> => {
+    const uniqueApplications = await this.removeDuplicates(applications);
+    const results = await Promise.allSettled(
+      uniqueApplications.map((app) => this.create(app)),
+    );
+
+    const succeed: Application[] = [];
+    const failed: Array<{ application: Application; reason: unknown }> = [];
+
+    results.forEach((result: PromiseSettledResult<Application>) => {
+      if (result.status === 'rejected') {
+        failed.push({
+          application: {} as Application,
+          reason: result.reason as unknown,
+        });
+        return;
+      }
+
+      succeed.push(result.value);
+    });
+
+    return {
+      succeed,
+      failed,
+    };
+  };
 }

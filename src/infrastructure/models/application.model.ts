@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, now, Types } from 'mongoose';
-import { ApplicationStatus } from '../../domain/entities/application.entity';
+import {
+  ApplicationStatus,
+  EnumApplicationStatus,
+} from '../../domain/entities/application.entity';
 // import { v4 as uuidv4 } from 'uuid';
 
 @Schema({
@@ -35,8 +38,8 @@ export class ApplicationModel extends Document {
 
   @Prop({
     required: false,
-    enum: Object.values(ApplicationStatus),
-    default: ApplicationStatus.IN_REVIEW,
+    enum: EnumApplicationStatus,
+    default: EnumApplicationStatus.IN_REVIEW,
   })
   status: ApplicationStatus;
 

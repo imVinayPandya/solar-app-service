@@ -1,8 +1,11 @@
-export enum ApplicationStatus {
-  IN_REVIEW = 'in_review',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
+export const EnumApplicationStatus = {
+  IN_REVIEW: 'in_review',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+} as const;
+
+export type ApplicationStatus =
+  (typeof EnumApplicationStatus)[keyof typeof EnumApplicationStatus];
 
 export interface Application {
   id: string;
