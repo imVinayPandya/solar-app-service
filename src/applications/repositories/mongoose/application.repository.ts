@@ -1,15 +1,15 @@
 import { Model, RootFilterQuery } from 'mongoose';
-import { Application } from '../../../domain/entities/application.entity';
-import { ApplicationRepository } from '../../../domain/repositories/application.repository';
-import { ApplicationModel } from '../../models/application.model';
+import { Application } from '../../../applications/domain/entities/application.entity';
+import { ApplicationRepository } from '../../../applications/domain/repositories/application.repository';
+import { ApplicationsModel } from '../../../applications/applications.model';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class MongooseApplicationRepository implements ApplicationRepository {
   constructor(
-    @InjectModel(ApplicationModel.name)
-    private readonly applicationModel: Model<ApplicationModel>,
+    @InjectModel(ApplicationsModel.name)
+    private readonly applicationModel: Model<ApplicationsModel>,
   ) {}
 
   findAll(filters?: RootFilterQuery<Application>): Promise<Application[]> {

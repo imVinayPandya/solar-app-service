@@ -1,9 +1,9 @@
 import { IsString, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
-import { IsUniqueApplicationName } from 'src/common/validators/is-unique-application-name.validator';
+import { IsUniqueApplicationName } from '../../libs/validators/is-unique-application-name.validator';
 import {
   ApplicationStatus,
   EnumApplicationStatus,
-} from 'src/domain/entities/application.entity';
+} from '../../applications/domain/entities/application.entity';
 
 export class CreateApplicationDto {
   @IsString()

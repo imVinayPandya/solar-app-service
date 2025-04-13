@@ -1,37 +1,37 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ApplicationService } from '../src/application/services/application.service';
-import { ApplicationRepository } from '../src/domain/repositories/application.repository';
+import { ApplicationsService } from './applications.service';
+import { ApplicationRepository } from './domain/repositories/application.repository';
 import {
   Application,
-  ApplicationStatus,
-} from '../src/domain/entities/application.entity';
-import { ConflictException, NotFoundException } from '../src/utils/exceptions';
+  EnumApplicationStatus,
+} from './domain/entities/application.entity';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
-describe('ApplicationService', () => {
-  let service: ApplicationService;
-  let mockRepository: jest.Mocked<ApplicationRepository>;
+describe('ApplicationsService', () => {
+  let service: ApplicationsService;
+
+  const mockApplicationRepository: jest.Mocked<ApplicationRepository> = {
+    create: jest.fn(),
+    delete: jest.fn(),
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    findByName: jest.fn(),
+    findDuplicates: jest.fn(),
+    update: jest.fn(),
+  };
 
   beforeEach(async () => {
-    mockRepository = {
-      findAll: jest.fn(),
-      findById: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      findByName: jest.fn(),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ApplicationService,
+        ApplicationsService,
         {
-          provide: 'ApplicationRepository',
-          useValue: mockRepository,
+          provide: 'APPLICATIONS_REPOSITORY',
+          useValue: mockApplicationRepository,
         },
       ],
     }).compile();
 
-    service = module.get<ApplicationService>(ApplicationService);
+    service = module.get<ApplicationsService>(ApplicationsService);
   });
 
   describe('getApplicationById', () => {
@@ -44,17 +44,15 @@ describe('ApplicationService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      mockRepository.findById.mockResolvedValue(mockApplication);
+      mockApplicationRepository.findById.mockResolvedValue(mockApplication);
 
-      const result = await service.getApplicationById('1');
+      const result = await service.findOne('1');
       expect(result).toEqual(mockApplication);
     });
 
     it('should throw NotFoundException if application not found', async () => {
-      mockRepository.findById.mockResolvedValue(null);
-      await expect(service.getApplicationById('1')).rejects.toThrow(
-        NotFoundException,
-      );
+      mockApplicationRepository.findById.mockResolvedValue(null);
+      await expect(service.findOne('1')).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -63,7 +61,7 @@ describe('ApplicationService', () => {
       const newApp = {
         name: 'New App',
         description: 'New Desc',
-        status: 'in_review' as ApplicationStatus,
+        status: EnumApplicationStatus.IN_REVIEW,
       };
       const createdApp: Application = {
         ...newApp,
@@ -72,10 +70,11 @@ describe('ApplicationService', () => {
         updatedAt: new Date(),
       };
 
-      mockRepository.findByName.mockResolvedValue(null);
-      mockRepository.create.mockResolvedValue(createdApp);
+      mockApplicationRepository.findByName.mockResolvedValue(null);
+      mockApplicationRepository.findDuplicates.mockResolvedValue([]);
+      mockApplicationRepository.create.mockResolvedValue(createdApp);
 
-      const result = await service.createApplication(newApp);
+      const result = await service.create(newApp);
       expect(result).toEqual(createdApp);
     });
 
@@ -88,10 +87,10 @@ describe('ApplicationService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      mockRepository.findByName.mockResolvedValue(existingApp);
+      mockApplicationRepository.findByName.mockResolvedValue(existingApp);
 
       await expect(
-        service.createApplication({
+        service.create({
           name: 'Existing App',
           description: 'New Desc',
           status: 'in_review',

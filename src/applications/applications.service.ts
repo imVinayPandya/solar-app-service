@@ -5,13 +5,13 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { CreateApplicationDto } from '../dto/create-application.dto';
-import { UpdateApplicationDto } from '../dto/update-application.dto';
-import { ApplicationRepository } from '../../domain/repositories/application.repository';
+import { CreateApplicationDto } from './dto/create-application.dto';
+import { UpdateApplicationDto } from './dto/update-application.dto';
+import { ApplicationRepository } from './domain/repositories/application.repository';
 import {
   Application,
   ApplicationStatus,
-} from '../../domain/entities/application.entity';
+} from './domain/entities/application.entity';
 
 @Injectable()
 export class ApplicationsService {
@@ -53,7 +53,7 @@ export class ApplicationsService {
       application.name,
     );
 
-    if (potentialDuplicates.length > 0) {
+    if (potentialDuplicates?.length > 0) {
       throw new ConflictException('Potential duplicate application detected');
     }
 

@@ -12,8 +12,8 @@ export interface Application {
   name: string;
   description: string;
   status?: ApplicationStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export type ApplicationPayload = Omit<

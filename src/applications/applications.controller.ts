@@ -15,15 +15,15 @@ import {
 import {
   Application,
   ApplicationStatus,
-} from '../../domain/entities/application.entity';
-import { CreateApplicationDto } from 'src/application/dto/create-application.dto';
-import { UpdateApplicationDto } from 'src/application/dto/update-application.dto';
-import { ApplicationsService } from 'src/application/services/applications.service';
+} from './domain/entities/application.entity';
+
+import { ApplicationsService } from '../applications/applications.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import safeAwait from 'safe-await';
+import { CreateApplicationDto } from './dto/create-application.dto';
+import { UpdateApplicationDto } from './dto/update-application.dto';
 
 @Controller('applications')
-export class ApplicationController {
+export class ApplicationsController {
   constructor(private readonly applicationService: ApplicationsService) {}
 
   @Post()
@@ -71,11 +71,10 @@ export class ApplicationController {
     succeed: Application[];
     failed: Array<{ application: Application; reason: unknown }>;
   }> {
-    const [error, applications] = await safeAwait(
-      async () => (await JSON.parse(file.buffer.toString())) as Application[],
-    );
-
-    if (error) {
+    let applications: Application[];
+    try {
+      applications = JSON.parse(file.buffer.toString()) as Application[];
+    } catch (error) {
       Logger.error('Error while parsing file content');
       Logger.error(error);
       throw new BadRequestException('Error while parsing file');

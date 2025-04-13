@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": false,
     "types": ["multer", "jest", "node", "express"],
     "esModuleInterop": true,
-    "allowJs": true
+    // "allowJs": true
   },
 }

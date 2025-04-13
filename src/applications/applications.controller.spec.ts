@@ -1,16 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ApplicationController } from './application.controller';
-import { ApplicationsService } from 'src/application/services/applications.service';
+import { ApplicationsService } from './applications.service';
 import {
   Application,
   EnumApplicationStatus,
-} from '../../domain/entities/application.entity';
-import { CreateApplicationDto } from 'src/application/dto/create-application.dto';
-import { UpdateApplicationDto } from 'src/application/dto/update-application.dto';
+} from './domain/entities/application.entity';
 import { BadRequestException } from '@nestjs/common';
+import { CreateApplicationDto } from './dto/create-application.dto';
+import { UpdateApplicationDto } from './dto/update-application.dto';
+import { ApplicationsController } from './applications.controller';
+import { ApplicationRepository } from './domain/repositories/application.repository';
 
 describe('ApplicationController', () => {
-  let controller: ApplicationController;
+  let controller: ApplicationsController;
   let service: ApplicationsService;
 
   const mockApplication: Application = {
@@ -19,6 +20,16 @@ describe('ApplicationController', () => {
     description: 'This is test description',
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  const mockApplicationRepository: ApplicationRepository = {
+    create: jest.fn(),
+    delete: jest.fn(),
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    findByName: jest.fn(),
+    findDuplicates: jest.fn(),
+    update: jest.fn(),
   };
 
   const mockApplicationsService = {
@@ -30,20 +41,26 @@ describe('ApplicationController', () => {
     getApplicationsByStatus: jest.fn(),
     getDuplicateData: jest.fn(),
     importApplications: jest.fn(),
-  };
+    removeDuplicates: jest.fn(),
+    applicationRepository: mockApplicationRepository,
+  } as unknown as jest.Mocked<ApplicationsService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ApplicationController],
+      controllers: [ApplicationsController],
       providers: [
         {
           provide: ApplicationsService,
           useValue: mockApplicationsService,
         },
+        {
+          provide: 'APPLICATIONS_REPOSITORY',
+          useValue: mockApplicationRepository,
+        },
       ],
     }).compile();
 
-    controller = module.get<ApplicationController>(ApplicationController);
+    controller = module.get<ApplicationsController>(ApplicationsController);
     service = module.get<ApplicationsService>(ApplicationsService);
   });
 
@@ -144,11 +161,25 @@ describe('ApplicationController', () => {
   describe('importApplications', () => {
     it('should import applications from file', async () => {
       const mockFile = {
-        buffer: Buffer.from(JSON.stringify([mockApplication])),
+        buffer: Buffer.from(
+          JSON.stringify([
+            {
+              ...mockApplication,
+              createdAt: (mockApplication.createdAt as Date).toISOString(),
+              updatedAt: (mockApplication.updatedAt as Date).toISOString(),
+            },
+          ]),
+        ),
       } as Express.Multer.File;
 
       const expectedResult = {
-        succeed: [mockApplication],
+        succeed: [
+          {
+            ...mockApplication,
+            createdAt: (mockApplication.createdAt as Date).toISOString(),
+            updatedAt: (mockApplication.updatedAt as Date).toISOString(),
+          },
+        ],
         failed: [],
       };
 
@@ -159,7 +190,7 @@ describe('ApplicationController', () => {
       const result = await controller.importApplications(mockFile);
       expect(result).toEqual(expectedResult);
       expect(service.importApplications).toHaveBeenCalledWith([
-        mockApplication,
+        expectedResult.succeed[0],
       ]);
     });
 

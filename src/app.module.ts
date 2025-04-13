@@ -1,33 +1,31 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import {
-  ApplicationModel,
-  ApplicationSchema,
-} from './infrastructure/models/application.model';
-import { ApplicationController } from './infrastructure/controllers/application.controller';
-import { ApplicationsService } from './application/services/applications.service';
-import { MongooseApplicationRepository } from './infrastructure/repositories/mongoose/application.repository';
+
+import { ApplicationsModule } from './applications/applications.module';
+import configurations from './config/configurations';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/solar-applications'),
-    MongooseModule.forFeature([
-      {
-        name: ApplicationModel.name,
-        schema: ApplicationSchema,
+    ConfigModule.forRoot({
+      load: [configurations],
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('databaseUrl') as string;
+        if (!databaseUrl) {
+          throw new Error('Database URL is not configured');
+        }
+        return { uri: databaseUrl };
       },
-    ]),
+      inject: [ConfigService],
+    }),
+    ApplicationsModule,
   ],
-  controllers: [AppController, ApplicationController],
-  providers: [
-    AppService,
-    ApplicationsService,
-    {
-      provide: 'APPLICATIONS_REPOSITORY',
-      useClass: MongooseApplicationRepository,
-    },
-  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

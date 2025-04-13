@@ -3,7 +3,7 @@ import { Document, now, Types } from 'mongoose';
 import {
   ApplicationStatus,
   EnumApplicationStatus,
-} from '../../domain/entities/application.entity';
+} from './domain/entities/application.entity';
 // import { v4 as uuidv4 } from 'uuid';
 
 @Schema({
@@ -19,13 +19,13 @@ import {
     },
   },
 })
-export class ApplicationModel extends Document {
+export class ApplicationsModel extends Document {
   @Prop({
     type: String,
     required: [true, 'ID is required'],
     unique: true,
     default: function () {
-      return ((this as ApplicationModel)._id as Types.ObjectId).toHexString();
+      return ((this as ApplicationsModel)._id as Types.ObjectId).toHexString();
     },
   })
   declare id: string;
@@ -54,7 +54,8 @@ export class ApplicationModel extends Document {
   updatedAt: Date;
 }
 
-export const ApplicationSchema = SchemaFactory.createForClass(ApplicationModel);
+export const ApplicationSchema =
+  SchemaFactory.createForClass(ApplicationsModel);
 // Index for faster querying on frequently accessed fields
 ApplicationSchema.index({ name: 1 }, { unique: true });
 ApplicationSchema.index({ status: 1 });
