@@ -17,7 +17,7 @@ export class MongooseApplicationRepository implements ApplicationRepository {
   }
 
   async findById(id: string): Promise<Application | null> {
-    return this.applicationModel.findById(id).lean().exec();
+    return this.applicationModel.findOne({ id }).lean().exec();
   }
 
   async create(

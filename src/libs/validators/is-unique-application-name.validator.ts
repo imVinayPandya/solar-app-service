@@ -5,7 +5,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { ApplicationRepository } from 'src/applications/domain/repositories/application.repository';
+import { ApplicationRepository } from '../../applications/domain/repositories/application.repository';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -13,7 +13,7 @@ export class IsUniqueApplicationNameConstraint
   implements ValidatorConstraintInterface
 {
   constructor(
-    @Inject('APPLICATION_REPOSITORY')
+    @Inject('APPLICATIONS_REPOSITORY')
     private readonly repository: ApplicationRepository,
   ) {}
 

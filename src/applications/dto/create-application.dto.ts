@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsNotEmpty,
+  Validate,
+} from 'class-validator';
 import { IsUniqueApplicationName } from '../../libs/validators/is-unique-application-name.validator';
 import {
   ApplicationStatus,
@@ -8,7 +14,7 @@ import {
 export class CreateApplicationDto {
   @IsString()
   @IsNotEmpty()
-  @IsUniqueApplicationName()
+  @Validate(IsUniqueApplicationName)
   name: string;
 
   @IsString()

@@ -56,6 +56,6 @@ export class ApplicationsModel extends Document {
 
 export const ApplicationSchema =
   SchemaFactory.createForClass(ApplicationsModel);
-// Index for faster querying on frequently accessed fields
 ApplicationSchema.index({ name: 1 }, { unique: true });
 ApplicationSchema.index({ status: 1 });
+ApplicationSchema.index({ name: 1 });

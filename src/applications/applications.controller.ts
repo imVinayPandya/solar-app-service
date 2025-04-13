@@ -34,7 +34,10 @@ export class ApplicationsController {
   }
 
   @Get()
-  findAll(@Query('status') status?: ApplicationStatus): Promise<Application[]> {
+  findAll(
+    @Query('status')
+    status?: ApplicationStatus,
+  ): Promise<Application[]> {
     if (status) {
       return this.applicationService.getApplicationsByStatus(status);
     }
