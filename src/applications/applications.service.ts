@@ -126,7 +126,9 @@ export class ApplicationsService {
 
     if (!uniqueApplications?.length) {
       Logger.log('No unique record found in the json file');
-      throw new ConflictException('No unique records found');
+      throw new ConflictException(
+        'No unique records found or Records already exist',
+      );
     }
 
     const results = await Promise.allSettled(

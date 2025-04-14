@@ -31,7 +31,7 @@ export class MongooseApplicationRepository implements ApplicationRepository {
     application: Partial<Application>,
   ): Promise<Application | null> {
     return this.applicationModel
-      .findByIdAndUpdate(id, application, {
+      .findOneAndUpdate({ id }, application, {
         new: true,
       })
       .exec();
@@ -51,7 +51,7 @@ export class MongooseApplicationRepository implements ApplicationRepository {
 
     // We can add more filter if needed
     if (name) {
-      query.name = new RegExp(`${name}`);
+      query.name = new RegExp(`${name}`, 'i');
     }
 
     return this.applicationModel.find(query).lean().exec();
