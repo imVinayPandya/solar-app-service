@@ -74,7 +74,6 @@ export class ApplicationsController {
     succeed: Application[];
     failed: Array<{ application: Application; reason: unknown }>;
   }> {
-    console.log('here....');
     let applications: Application[];
     try {
       applications = JSON.parse(file?.buffer?.toString()) as Application[];

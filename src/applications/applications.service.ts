@@ -122,9 +122,7 @@ export class ApplicationsService {
     succeed: Application[];
     failed: Array<{ application: Application; reason: unknown }>;
   }> => {
-    console.log('here.......');
     const uniqueApplications = await this.removeDuplicates(applications);
-    console.log({ uniqueApplications });
 
     if (!uniqueApplications?.length) {
       Logger.log('No unique record found in the json file');
@@ -139,7 +137,6 @@ export class ApplicationsService {
     const failed: Array<{ application: Application; reason: unknown }> = [];
 
     results.forEach((result: PromiseSettledResult<Application>) => {
-      console.log({ result });
       if (result.status === 'rejected') {
         failed.push({
           application: {} as Application,
