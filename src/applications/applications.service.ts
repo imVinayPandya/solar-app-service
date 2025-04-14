@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
@@ -121,7 +122,15 @@ export class ApplicationsService {
     succeed: Application[];
     failed: Array<{ application: Application; reason: unknown }>;
   }> => {
+    console.log('here.......');
     const uniqueApplications = await this.removeDuplicates(applications);
+    console.log({ uniqueApplications });
+
+    if (!uniqueApplications?.length) {
+      Logger.log('No unique record found in the json file');
+      throw new ConflictException('No unique records found');
+    }
+
     const results = await Promise.allSettled(
       uniqueApplications.map((app) => this.create(app)),
     );
@@ -130,6 +139,7 @@ export class ApplicationsService {
     const failed: Array<{ application: Application; reason: unknown }> = [];
 
     results.forEach((result: PromiseSettledResult<Application>) => {
+      console.log({ result });
       if (result.status === 'rejected') {
         failed.push({
           application: {} as Application,

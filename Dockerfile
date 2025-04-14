@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -8,8 +8,10 @@ RUN npm install
 
 COPY . .
 
+# COPY .env.example .env
+
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 3030
 
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "/app/dist/src/main.js"]

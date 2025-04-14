@@ -4,12 +4,17 @@ services:
   app:
     build: .
     ports:
-      - '3000:3000'
+      - '3030:3030'
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      - DATABASE_URL=mongodb://mongo:27017/solar-applications
+    env_file:
+      - .env
     depends_on:
       - mongo
     restart: unless-stopped
+    networks:
+      - app-network
 
   mongo:
     image: mongo:5.0
@@ -19,6 +24,8 @@ services:
       - mongo-data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=solar-applications
+    networks:
+      - app-network
 
   mongo-seed:
     build: .
@@ -27,6 +34,10 @@ services:
     command: npm run seed
     volumes:
       - ./setup/seed.json:/app/seed.json
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   mongo-data:
