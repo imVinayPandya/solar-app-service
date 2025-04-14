@@ -21,6 +21,7 @@ import { ApplicationsService } from '../applications/applications.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('applications')
 export class ApplicationsController {
@@ -34,6 +35,10 @@ export class ApplicationsController {
   }
 
   @Get()
+  @ApiQuery({
+    name: 'status',
+    required: false,
+  })
   findAll(
     @Query('status')
     status?: ApplicationStatus,
